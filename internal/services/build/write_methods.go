@@ -5,11 +5,10 @@ import (
 	"github.com/brewbits-co/releasedesk/internal/domains/build"
 	"github.com/brewbits-co/releasedesk/internal/values"
 	"github.com/brewbits-co/releasedesk/pkg/storage"
-	"mime/multipart"
 	"path/filepath"
 )
 
-func (s *service) UploadBuild(slug values.Slug, os values.OS, info build.BasicInfo, files map[values.Architecture]*multipart.FileHeader, Metadata map[string]string) (build.Build, error) {
+func (s *service) UploadBuild(slug values.Slug, os values.OS, info build.BasicInfo, files map[values.Architecture]FileUpload, Metadata map[string]string) (build.Build, error) {
 	for _, header := range files {
 		validFileType := isValidFileType(os, header.Filename)
 		if !validFileType {

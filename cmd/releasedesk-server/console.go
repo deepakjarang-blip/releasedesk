@@ -16,6 +16,7 @@ import (
 	"go.uber.org/dig"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // buildConsole sets up the Chi router with necessary middleware, resolves dependencies, configures routes, and serves static files.
@@ -28,6 +29,7 @@ func buildConsole(container *dig.Container) *http.Server {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/homepage", http.StatusTemporaryRedirect)
 	})
+	router.Get("/portal", redirectToPortal)
 
 	// Resolve dependencies and set up endpoints and views
 	err := container.Invoke(func(
@@ -65,11 +67,14 @@ func buildConsole(container *dig.Container) *http.Server {
 			r.Post("/internal/logout", authCtrl.HandleLogout)
 			r.Post("/internal/apps", appCtrl.HandleCreateApp)
 			r.Post("/internal/apps/{slug}/setup", appCtrl.HandleAppSetupGuide)
+			r.Post("/internal/apps/{slug}/publisher", appCtrl.HandleUpdatePublisher)
 			r.Post("/internal/apps/{slug}/platforms", platformCtrl.HandleAddPlatform)
 			r.Post("/internal/apps/{slug}/releases", releaseCtrl.HandleCreateRelease)
 			r.Put("/internal/releases/{id}", releaseCtrl.HandleUpdateBasicInfo)
 			r.Post("/internal/releases/{id}/release-notes", releaseCtrl.HandleSaveReleaseNotes)
 			r.Post("/internal/apps/{slug}/platforms/{platform}/builds", buildCtrl.HandleBuildUpload)
+			r.Put("/internal/apps/{slug}/platforms/{platform}/builds/chunks/{uploadID}/{field}/{index}", buildCtrl.HandleBuildUploadChunk)
+			r.Post("/internal/apps/{slug}/platforms/{platform}/builds/chunks/{uploadID}/complete", buildCtrl.HandleBuildUploadComplete)
 			r.Get("/internal/artifacts/{checksum}", buildCtrl.HandleArtifactDownload)
 		})
 
@@ -93,4 +98,18 @@ func buildConsole(container *dig.Container) *http.Server {
 		Handler: router,
 	}
 	return server
+}
+
+func redirectToPortal(w http.ResponseWriter, r *http.Request) {
+	host := r.Host
+	portalURL := "http://localhost:9090/"
+	switch {
+	case strings.HasSuffix(host, "-8080.app.github.dev"):
+		portalHost := strings.TrimSuffix(host, "-8080.app.github.dev") + "-9090.app.github.dev"
+		portalURL = "https://" + portalHost + "/"
+	case strings.HasSuffix(host, ":8080"):
+		portalHost := strings.TrimSuffix(host, ":8080") + ":9090"
+		portalURL = "http://" + portalHost + "/"
+	}
+	http.Redirect(w, r, portalURL, http.StatusFound)
 }

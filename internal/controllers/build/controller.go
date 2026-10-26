@@ -9,6 +9,8 @@ import (
 // BuildController defines the interface for managing build operations and rendering appropriate views.
 type BuildController interface {
 	HandleBuildUpload(w http.ResponseWriter, r *http.Request)
+	HandleBuildUploadChunk(w http.ResponseWriter, r *http.Request)
+	HandleBuildUploadComplete(w http.ResponseWriter, r *http.Request)
 	HandleArtifactDownload(w http.ResponseWriter, r *http.Request)
 	RenderBuildList(w http.ResponseWriter, r *http.Request)
 	RenderBuildDetails(w http.ResponseWriter, r *http.Request)

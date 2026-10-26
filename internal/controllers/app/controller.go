@@ -9,6 +9,7 @@ import (
 type AppController interface {
 	HandleCreateApp(w http.ResponseWriter, r *http.Request)
 	HandleAppSetupGuide(w http.ResponseWriter, r *http.Request)
+	HandleUpdatePublisher(w http.ResponseWriter, r *http.Request)
 	RenderDashboard(w http.ResponseWriter, r *http.Request)
 }
 

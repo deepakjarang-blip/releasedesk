@@ -9,6 +9,18 @@ interface Channel {
   Name: string;
 }
 
+interface BuildInfo {
+  ID: number;
+  Number: string;
+  Version: string;
+}
+
+interface BuildSelectionOption {
+  OS: string;
+  Builds: BuildInfo[];
+  SelectedBuildID: number;
+}
+
 @customElement('release-update-form')
 export class ReleaseUpdateForm extends LitElement {
   override createRenderRoot() {
@@ -29,6 +41,9 @@ export class ReleaseUpdateForm extends LitElement {
 
   @property({type: Array})
   channels: Channel[] = [];
+
+  @property({type: Array, attribute: 'build-options'})
+  buildOptions: BuildSelectionOption[] = [];
 
   @state()
   submitFailed = false;
@@ -103,7 +118,7 @@ export class ReleaseUpdateForm extends LitElement {
 
           <fieldset>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              ${radioOption('BuildSelection', 'Last', 'Last', 'Always use the latest build.', this.buildSelection === 'Last', this.handleBuildSelectionChange)}
+              ${radioOption('BuildSelection', 'Last', 'Last', 'Automatically use the latest build per platform.', this.buildSelection === 'Last', this.handleBuildSelectionChange)}
               ${radioOption('BuildSelection', 'Manual', 'Manual', 'Select builds manually.', this.buildSelection === 'Manual', this.handleBuildSelectionChange)}
             </div>
           </fieldset>
@@ -111,8 +126,22 @@ export class ReleaseUpdateForm extends LitElement {
           
         ${this.buildSelection === 'Manual' ? html`
           <div class="col-span-full mt-4">
-            <div class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-              
+            <div class="space-y-4 rounded-lg border border-gray-200 p-4">
+              ${this.buildOptions.map(option => html`
+                <div>
+                  <label for="Build_${option.OS}" class="mb-2 block text-sm font-medium text-gray-900">${option.OS} build</label>
+                  <select id="Build_${option.OS}" name="Build_${option.OS}"
+                          class="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-violet-600 focus:ring-violet-600">
+                    <option value="">No build selected</option>
+                    ${option.Builds.map(build => html`
+                      <option value="${build.ID}" ?selected="${build.ID === option.SelectedBuildID}">
+                        Build #${build.Number} · ${build.Version}
+                      </option>
+                    `)}
+                  </select>
+                  ${option.Builds.length === 0 ? html`<p class="mt-1 text-sm text-gray-500">No builds uploaded for this platform.</p>` : ''}
+                </div>
+              `)}
             </div>
           </div>
         ` : ''}

@@ -7,14 +7,21 @@ import (
 	"mime/multipart"
 )
 
+type FileUpload struct {
+	Filename string
+	Size     int64
+	Open     func() (multipart.File, error)
+}
+
 // Service defines the interface for handling build-related use cases.
 type Service interface {
 	// UploadBuild uploads a new build for the specified platform, using the provided build information and files.
-	UploadBuild(slug values.Slug, os values.OS, info build.BasicInfo, files map[values.Architecture]*multipart.FileHeader, Metadata map[string]string) (build.Build, error)
+	UploadBuild(slug values.Slug, os values.OS, info build.BasicInfo, files map[values.Architecture]FileUpload, Metadata map[string]string) (build.Build, error)
 	// GetPlatformBuilds retrieves the list of build from a specific Platform.
 	GetPlatformBuilds(platformID int) ([]build.BasicInfo, error)
 	// GetBuildDetails return the full information of a Build including its Artifacts and Metadata.
-	GetBuildDetails(platformID int, number int) (build.Build, error)
+	GetBuildDetails(platformID int, number string) (build.Build, error)
+	GetPublicArtifactByChecksum(checksum string) (build.Artifact, error)
 }
 
 // NewBuildService initializes a new instance of the build Service using the provided dependencies.

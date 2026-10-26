@@ -2,6 +2,7 @@ package release
 
 import (
 	"github.com/brewbits-co/releasedesk/internal/services/app"
+	"github.com/brewbits-co/releasedesk/internal/services/build"
 	"github.com/brewbits-co/releasedesk/internal/services/release"
 	"net/http"
 )
@@ -15,14 +16,16 @@ type ReleaseController interface {
 	HandleUpdateBasicInfo(w http.ResponseWriter, r *http.Request)
 }
 
-func NewReleaseController(service release.Service, appService app.Service) ReleaseController {
+func NewReleaseController(service release.Service, appService app.Service, buildService build.Service) ReleaseController {
 	return &releaseController{
-		service:    service,
-		appService: appService,
+		service:      service,
+		appService:   appService,
+		buildService: buildService,
 	}
 }
 
 type releaseController struct {
-	service    release.Service
-	appService app.Service
+	service      release.Service
+	appService   app.Service
+	buildService build.Service
 }

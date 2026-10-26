@@ -8,7 +8,6 @@ import (
 	"github.com/go-chi/render"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 func (c *buildController) RenderBuildList(w http.ResponseWriter, r *http.Request) {
@@ -66,13 +65,7 @@ func (c *buildController) RenderBuildDetails(w http.ResponseWriter, r *http.Requ
 		log.Println(err)
 	}
 
-	number, err := strconv.Atoi(chi.URLParam(r, "number"))
-	if err != nil {
-		// TODO: redirect to error page
-		log.Println(err)
-	}
-
-	buildDetails, err := c.service.GetBuildDetails(currentPlatform.PlatformID, number)
+	buildDetails, err := c.service.GetBuildDetails(currentPlatform.PlatformID, chi.URLParam(r, "number"))
 	if err != nil {
 		// TODO: redirect to error page
 		log.Println(err)
@@ -110,13 +103,7 @@ func (c *buildController) RenderBuildMetadata(w http.ResponseWriter, r *http.Req
 		log.Println(err)
 	}
 
-	number, err := strconv.Atoi(chi.URLParam(r, "number"))
-	if err != nil {
-		// TODO: redirect to error page
-		log.Println(err)
-	}
-
-	buildDetails, err := c.service.GetBuildDetails(currentPlatform.PlatformID, number)
+	buildDetails, err := c.service.GetBuildDetails(currentPlatform.PlatformID, chi.URLParam(r, "number"))
 	if err != nil {
 		// TODO: redirect to error page
 		log.Println(err)

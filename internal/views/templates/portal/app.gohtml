@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.App.Name}} | Download Portal</title>
+  <link rel="stylesheet" href="/assets/tailwind.css">
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+  <header class="border-b border-gray-200 bg-white">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
+      <a href="/" class="text-lg font-semibold tracking-tight">ReleaseDesk</a>
+      <a href="/" class="text-sm font-medium text-violet-800">All applications</a>
+    </div>
+  </header>
+  <main class="mx-auto max-w-5xl px-6 py-12">
+    <div class="mb-10 border-b border-gray-200 pb-6">
+      <p class="text-sm font-medium uppercase text-violet-800">Application</p>
+      <h1 class="mt-2 text-3xl font-semibold">{{.App.Name}}</h1>
+      {{if .App.Description.Valid}}<p class="mt-3 max-w-2xl text-gray-600">{{.App.Description.String}}</p>{{end}}
+      <dl class="mt-5 grid gap-4 text-sm sm:grid-cols-2">
+        <div>
+          <dt class="font-medium text-gray-500">Publisher</dt>
+          {{if .App.Publisher.Valid}}
+            <dd class="mt-1 font-semibold text-gray-900">{{.App.Publisher.String}}</dd>
+          {{else}}
+            <dd class="mt-1 text-gray-500">Publisher details have not been provided.</dd>
+          {{end}}
+        </div>
+        <div>
+          <dt class="font-medium text-gray-500">Application</dt>
+          <dd class="mt-1 font-semibold text-gray-900">{{.App.Name}}</dd>
+        </div>
+      </dl>
+    </div>
+    {{if .Releases}}
+      <div class="space-y-10">
+        {{range .Releases}}
+          <section class="border-b border-gray-200 pb-8">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <div>
+                <h2 class="text-xl font-semibold">Version {{.Version}}</h2>
+                <p class="mt-1 text-sm text-gray-500">{{.Channel}} &middot; {{.CreatedAt.Format "Jan 2, 2006"}}</p>
+              </div>
+            </div>
+            {{if .Builds}}
+              <div class="mt-5 grid gap-6 sm:grid-cols-2">
+                {{range .Builds}}
+                  {{$build := .}}
+                  <div>
+                    <h3 class="text-sm font-semibold">{{.OS}} · Build {{.Number}}</h3>
+                    {{if .Artifacts}}
+                      <ul class="mt-2 space-y-2">
+                          {{range .Artifacts}}
+                            <li><a class="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-violet-800 px-5 py-3 text-base font-semibold text-white hover:bg-violet-700 sm:w-auto" href="{{artifactURL .Sha256 .Filename}}">Download &amp; install {{.Filename}}</a><p class="mt-2 text-sm text-gray-500">{{.Size}} · {{$build.OS}} build {{$build.Number}}</p></li>
+                        {{end}}
+                      </ul>
+                    {{else}}
+                      <p class="mt-2 text-sm text-gray-500">No artifacts attached to this build.</p>
+                    {{end}}
+                  </div>
+                {{end}}
+              </div>
+            {{else}}
+              <p class="mt-4 text-sm text-gray-500">No builds are attached to this release.</p>
+            {{end}}
+          </section>
+        {{end}}
+      </div>
+    {{else}}
+      <p class="border-y border-gray-200 py-8 text-sm text-gray-600">No published releases are available for this application yet.</p>
+    {{end}}
+  </main>
+</body>
+</html>

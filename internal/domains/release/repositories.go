@@ -13,6 +13,7 @@ type ReleaseRepository interface {
 	GetByID(id int) (Release, error)
 	LinkBuild(releaseID int, buildID int, os values.OS) error
 	UnlinkBuild(releaseID int, buildID int, os values.OS) error
+	SetBuilds(releaseID int, builds []LinkedBuilds) error
 }
 
 type ReleaseNotesRepository interface {

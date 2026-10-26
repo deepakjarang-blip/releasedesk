@@ -135,6 +135,15 @@ func applyMigrations(engine *xorm.Engine) error {
 				return nil
 			},
 		},
+		{
+			ID: "202610261800",
+			Migrate: func(tx *xorm.Engine) error {
+				return tx.Sync2(&app.App{})
+			},
+			Rollback: func(tx *xorm.Engine) error {
+				return nil
+			},
+		},
 	}
 
 	m := migrate.New(engine, &migrate.Options{

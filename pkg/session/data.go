@@ -19,6 +19,7 @@ type CurrentAppData struct {
 	AppID     int
 	AppName   string
 	AppSlug   values.Slug
+	Publisher string
 	Platforms []CurrentPlatformData
 }
 

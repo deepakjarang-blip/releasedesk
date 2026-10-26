@@ -37,6 +37,9 @@ export class BuildUploadDrawer extends LitElement {
     @state()
     submitFailed = false;
 
+    @state()
+    uploading = false;
+
     errorAlertRef: Ref<HTMLDivElement> = createRef();
 
     @state()
@@ -44,26 +47,76 @@ export class BuildUploadDrawer extends LitElement {
 
     handleSubmit(event: SubmitEvent) {
         event.preventDefault();
+        if (this.uploading) return;
         this.submitFailed = false;
 
-        const formData = new FormData(event.target as HTMLFormElement);
+        void this.uploadBuild(event.currentTarget as HTMLFormElement);
+    }
 
-        fetch(`/internal/apps/${this.slug}/platforms/${this.platform}/builds`, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include'
-        }).then(async response => {
-            if (!response.ok) {
-                this.submitFailed = true;
-                this.errorData = await response.json();
-                // wait form render to complete
-                await this.updateComplete;
-                // scroll the page to the error alert
-                this.errorAlertRef.value?.scrollIntoView();
-            } else {
-                window.location.href = `/dashboard/${this.slug}/platforms/${this.platform}/builds/${formData.get("Number")}`;
+    async uploadBuild(form: HTMLFormElement) {
+        this.uploading = true;
+        const formData = new FormData(form);
+        const files = Array.from(form.querySelectorAll<HTMLInputElement>('input[type="file"]'))
+            .flatMap(input => Array.from(input.files ?? []).map(file => ({field: input.name, file})));
+        const uploadID = crypto.randomUUID().replaceAll('-', '');
+        const uploadBase = `/internal/apps/${this.slug}/platforms/${this.platform}/builds/chunks/${uploadID}`;
+        const uploadDetails: {
+            number: string;
+            version: string;
+            files: Record<string, {filename: string; size: number; chunks: number}>;
+        } = {
+            number: String(formData.get('Number') ?? ''),
+            version: String(formData.get('Version') ?? ''),
+            files: {},
+        };
+
+        try {
+            for (const {field, file} of files) {
+                const chunkCount = Math.ceil(file.size / (1 << 20));
+                uploadDetails.files[field] = {filename: file.name, size: file.size, chunks: chunkCount};
+
+                for (let index = 0; index < chunkCount; index++) {
+                    const chunk = file.slice(index * (1 << 20), (index + 1) * (1 << 20));
+                    const response = await fetch(`${uploadBase}/${encodeURIComponent(field)}/${index}`, {
+                        method: 'PUT',
+                        body: chunk,
+                        credentials: 'include',
+                    });
+                    if (!response.ok) {
+                        throw new Error(await this.readError(response));
+                    }
+                }
             }
-        });
+
+            const response = await fetch(`${uploadBase}/complete`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(uploadDetails),
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error(await this.readError(response));
+            }
+
+            window.location.href = `/dashboard/${this.slug}/platforms/${this.platform}/builds/${encodeURIComponent(uploadDetails.number)}`;
+        } catch (error) {
+            this.submitFailed = true;
+            this.errorData = {message: error instanceof Error ? error.message : 'Upload failed', helpTexts: []};
+            await this.updateComplete;
+            this.errorAlertRef.value?.scrollIntoView();
+        } finally {
+            this.uploading = false;
+        }
+    }
+
+    async readError(response: Response) {
+        const body = await response.text();
+        try {
+            const data = JSON.parse(body);
+            return data.message || data.error || `Upload failed (${response.status})`;
+        } catch {
+            return body || `Upload failed (${response.status})`;
+        }
     }
 
     handleClose() {
@@ -157,8 +210,9 @@ export class BuildUploadDrawer extends LitElement {
           </button>
           <button type="submit"
                   form="build-upload-form"
+                                    ?disabled="${this.uploading}"
                   class="ml-4 inline-flex justify-center rounded-md bg-violet-800 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-800">
-            Upload
+                        ${this.uploading ? 'Uploading...' : 'Upload'}
           </button>
         </span>
             </headless-drawer>

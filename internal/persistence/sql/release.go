@@ -90,7 +90,7 @@ func (r *releaseRepository) GetByAppIDAndVersion(appID int, version string) (rel
 	// For each linked build, get the build info and add it to the Builds map
 	for _, linkedBuild := range linkedBuilds {
 		var buildInfo build.BasicInfo
-		has, err := r.engine.ID(linkedBuild.BuildID).Get(&buildInfo)
+		has, err := r.engine.Table("build").ID(linkedBuild.BuildID).Get(&buildInfo)
 		if err != nil {
 			return release.Release{}, err
 		}
@@ -130,7 +130,7 @@ func (r *releaseRepository) GetByID(id int) (release.Release, error) {
 	// For each linked build, get the build info and add it to the Builds map
 	for _, linkedBuild := range linkedBuilds {
 		var buildInfo build.BasicInfo
-		has, err := r.engine.ID(linkedBuild.BuildID).Get(&buildInfo)
+		has, err := r.engine.Table("build").ID(linkedBuild.BuildID).Get(&buildInfo)
 		if err != nil {
 			return release.Release{}, err
 		}
@@ -164,4 +164,28 @@ func (r *releaseRepository) UnlinkBuild(releaseID int, buildID int, os values.OS
 
 	_, err := r.engine.Delete(&linkedBuild)
 	return err
+}
+
+func (r *releaseRepository) SetBuilds(releaseID int, builds []release.LinkedBuilds) error {
+	session := r.engine.NewSession()
+	defer session.Close()
+	if err := session.Begin(); err != nil {
+		return err
+	}
+	if _, err := session.Where("release_id = ?", releaseID).Delete(&release.LinkedBuilds{}); err != nil {
+		_ = session.Rollback()
+		return err
+	}
+	for i := range builds {
+		builds[i].ReleaseID = releaseID
+		if _, err := session.Insert(&builds[i]); err != nil {
+			_ = session.Rollback()
+			return err
+		}
+	}
+	if err := session.Commit(); err != nil {
+		_ = session.Rollback()
+		return err
+	}
+	return nil
 }

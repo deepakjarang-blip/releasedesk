@@ -1,11 +1,38 @@
 package app
 
 import (
+	"errors"
 	"github.com/brewbits-co/releasedesk/internal/domains/app"
 	"github.com/brewbits-co/releasedesk/internal/values"
 	"github.com/brewbits-co/releasedesk/pkg/session"
 	"sort"
 )
+
+func (s *service) GetPublicApps() ([]app.App, error) {
+	applications, err := s.appRepo.Find()
+	if err != nil {
+		return nil, err
+	}
+
+	publicApps := make([]app.App, 0, len(applications))
+	for _, application := range applications {
+		if !application.Private {
+			publicApps = append(publicApps, application)
+		}
+	}
+	return publicApps, nil
+}
+
+func (s *service) GetPublicApp(slug values.Slug) (app.App, error) {
+	application, err := s.appRepo.GetBySlug(slug)
+	if err != nil {
+		return app.App{}, err
+	}
+	if application.ID == 0 || application.Private {
+		return app.App{}, errors.New("app not found")
+	}
+	return application, nil
+}
 
 func (s *service) GetUserAccessibleApps(userID int) ([]app.App, error) {
 	applications, err := s.appRepo.Find()
@@ -73,6 +100,7 @@ func (s *service) GetCurrentAppData(slug values.Slug) (session.CurrentAppData, e
 		AppID:     applicationEntity.ID,
 		AppName:   applicationEntity.Name,
 		AppSlug:   applicationEntity.Slug,
+		Publisher: applicationEntity.Publisher.String,
 		Platforms: appPlatforms,
 	}, nil
 }

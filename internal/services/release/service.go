@@ -2,6 +2,8 @@ package release
 
 import (
 	"github.com/brewbits-co/releasedesk/internal/domains/app"
+	"github.com/brewbits-co/releasedesk/internal/domains/build"
+	"github.com/brewbits-co/releasedesk/internal/domains/platform"
 	"github.com/brewbits-co/releasedesk/internal/domains/release"
 	"github.com/brewbits-co/releasedesk/internal/values"
 )
@@ -16,14 +18,17 @@ type Service interface {
 	GetReleaseNotes(releaseID int) (release.ReleaseNotes, error)
 	GetReleaseByID(releaseID int) (release.Release, error)
 	UpdateReleaseBasicInfo(info release.BasicInfo) (release.Release, error)
+	UpdateReleaseBuilds(releaseID int, selections map[values.OS]int) error
 }
 
 // NewReleaseService initializes a new instance of the release Service using the provided dependencies.
-func NewReleaseService(releaseRepo release.ReleaseRepository, releaseNotesRepo release.ReleaseNotesRepository, appRepo app.AppRepository) Service {
+func NewReleaseService(releaseRepo release.ReleaseRepository, releaseNotesRepo release.ReleaseNotesRepository, appRepo app.AppRepository, buildRepo build.BuildRepository, platformRepo platform.PlatformRepository) Service {
 	return &service{
 		releaseRepo:      releaseRepo,
 		releaseNotesRepo: releaseNotesRepo,
 		appRepo:          appRepo,
+		buildRepo:        buildRepo,
+		platformRepo:     platformRepo,
 	}
 }
 
@@ -31,6 +36,8 @@ type service struct {
 	releaseRepo      release.ReleaseRepository
 	releaseNotesRepo release.ReleaseNotesRepository
 	appRepo          app.AppRepository
+	buildRepo        build.BuildRepository
+	platformRepo     platform.PlatformRepository
 }
 
 // SaveReleaseNotes saves release notes and associated changelogs for a release

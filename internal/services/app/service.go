@@ -16,6 +16,9 @@ type Service interface {
 	// GetUserAccessibleApps retrieves the list of applications that a given user
 	// has access to, based on the user's ID.
 	GetUserAccessibleApps(userID int) ([]app.App, error)
+	GetPublicApps() ([]app.App, error)
+	GetPublicApp(slug values.Slug) (app.App, error)
+	UpdateAppPublisher(slug values.Slug, publisher string) error
 	// ApplyAppSetupGuide applies the setup guide for the specified application,
 	// configuring it with the chosen settings.
 	ApplyAppSetupGuide(slug values.Slug, format values.VersionFormat, channels app.SetupChannelsOption, customChannels []string) error

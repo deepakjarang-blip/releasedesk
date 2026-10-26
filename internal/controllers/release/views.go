@@ -91,12 +91,27 @@ func (c *releaseController) RenderReleaseSummary(w http.ResponseWriter, r *http.
 		log.Println(err)
 	}
 
+	buildSelections := make([]BuildSelectionOption, 0, len(currentApp.Platforms))
+	for _, platform := range currentApp.Platforms {
+		builds, err := c.buildService.GetPlatformBuilds(platform.PlatformID)
+		if err != nil {
+			http.Error(w, "Unable to load platform builds", http.StatusInternalServerError)
+			return
+		}
+		selection := BuildSelectionOption{OS: platform.OS, Builds: builds}
+		if selected, ok := releaseSummary.Builds[platform.OS]; ok {
+			selection.SelectedBuildID = selected.ID
+		}
+		buildSelections = append(buildSelections, selection)
+	}
+
 	data := ReleaseSummaryData{
-		CurrentPage:    "Releases",
-		SessionData:    session.NewSessionData(r.Context()),
-		CurrentAppData: currentApp,
-		Channels:       channels,
-		Release:        releaseSummary,
+		CurrentPage:     "Releases",
+		SessionData:     session.NewSessionData(r.Context()),
+		CurrentAppData:  currentApp,
+		Channels:        channels,
+		Release:         releaseSummary,
+		BuildSelections: buildSelections,
 	}
 
 	err = tmpl.ExecuteTemplate(w, "index.gohtml", data)

@@ -64,3 +64,16 @@ func (c *appController) HandleAppSetupGuide(w http.ResponseWriter, r *http.Reque
 		return
 	}
 }
+
+func (c *appController) HandleUpdatePublisher(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid publisher details", http.StatusBadRequest)
+		return
+	}
+	slug := values.Slug(chi.URLParam(r, "slug"))
+	if err := c.service.UpdateAppPublisher(slug, r.Form.Get("Publisher")); err != nil {
+		http.Error(w, "Unable to update publisher details", http.StatusBadRequest)
+		return
+	}
+	http.Redirect(w, r, "/dashboard/"+string(slug), http.StatusSeeOther)
+}

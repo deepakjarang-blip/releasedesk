@@ -29,6 +29,8 @@ type BasicInfo struct {
 	Slug values.Slug `xorm:"varchar(100) not null unique"`
 	// Description provides details about the App.
 	Description sql.NullString `xorm:"text"`
+	// Publisher identifies the organization or person publishing the App.
+	Publisher sql.NullString `xorm:"varchar(200)"`
 	// Private indicates whether the App is private or publicly available.
 	Private bool `xorm:"not null default false"`
 	// VersionFormat defines the versioning format of an App.

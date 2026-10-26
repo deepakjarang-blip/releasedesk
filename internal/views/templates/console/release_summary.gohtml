@@ -52,7 +52,8 @@
             targetChannel="{{.Release.BasicInfo.TargetChannel}}"
             status="{{.Release.BasicInfo.Status}}"
             buildSelection="{{.Release.BasicInfo.BuildSelection}}"
-            channels="{{json .Channels}}">
+            channels="{{json .Channels}}"
+            build-options="{{json .BuildSelections}}">
         </release-update-form>
     </div>
 {{ end }}

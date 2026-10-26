@@ -73,7 +73,7 @@ func (r *buildRepository) FindByPlatformID(platformID int) ([]build.BasicInfo, e
 	return builds, nil
 }
 
-func (r *buildRepository) GetByPlatformIDAndNumber(platformID int, number int) (build.Build, error) {
+func (r *buildRepository) GetByPlatformIDAndNumber(platformID int, number string) (build.Build, error) {
 	var buildDetails build.Build
 
 	exist, err := r.engine.Where("platform_id = ? AND number = ?", platformID, number).Get(&buildDetails)
@@ -108,4 +108,44 @@ func (r *buildRepository) GetByPlatformIDAndNumber(platformID int, number int) (
 	buildDetails.Metadata = metadata
 
 	return buildDetails, nil
+}
+
+func (r *buildRepository) GetByIDAndPlatformID(buildID int, platformID int) (build.Build, error) {
+	var basicInfo build.BasicInfo
+	exists, err := r.engine.Table("build").Where("id = ? AND platform_id = ?", buildID, platformID).Get(&basicInfo)
+	if err != nil {
+		return build.Build{}, err
+	}
+	if !exists {
+		return build.Build{}, sql.ErrNoRows
+	}
+	return build.Build{BasicInfo: basicInfo}, nil
+}
+
+func (r *buildRepository) GetPublicArtifactByChecksum(checksum string) (build.Artifact, error) {
+	var artifact build.Artifact
+	_, err := r.engine.SQL(`
+		SELECT artifact.*
+		FROM artifact
+		INNER JOIN build ON build.id = artifact.build_id
+		INNER JOIN platform ON platform.id = build.platform_id
+		INNER JOIN app ON app.id = platform.app_id
+		INNER JOIN release ON release.app_id = app.id
+		INNER JOIN channel ON channel.id = release.target_channel AND channel.app_id = app.id
+		LEFT JOIN linked_builds ON linked_builds.release_id = release.id AND linked_builds.os = platform.os
+		WHERE artifact.sha256 = ?
+		  AND app.private = 0
+		  AND release.status = 'Published'
+		  AND channel.closed = 0
+		  AND (
+			(release.build_selection = 'Manual' AND linked_builds.build_id = build.id)
+			OR (release.build_selection = 'Last' AND build.id = (
+				SELECT latest_build.id FROM build AS latest_build
+				WHERE latest_build.platform_id = platform.id
+				ORDER BY latest_build.created_at DESC, latest_build.id DESC
+				LIMIT 1
+			))
+		  )
+		LIMIT 1`, checksum).Get(&artifact)
+	return artifact, err
 }

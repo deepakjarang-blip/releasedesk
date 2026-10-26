@@ -112,6 +112,17 @@ export class AppCreationDrawer extends LitElement {
                           class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-800 sm:text-sm/6"></textarea>
               </div>
             </div>
+            <div>
+              <label for="Publisher" class="block text-sm/6 font-medium text-gray-900">Publisher</label>
+              <div class="mt-2">
+                <input type="text"
+                       name="Publisher"
+                       id="Publisher"
+                       maxlength="200"
+                       autocomplete="organization"
+                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-violet-800">
+              </div>
+            </div>
             <fieldset>
               <legend class="text-sm/6 font-medium text-gray-900">Visibility</legend>
               <div class="mt-2 space-y-4">

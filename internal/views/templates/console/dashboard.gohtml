@@ -1,6 +1,15 @@
 {{ define "content" }}
     {{- /*gotype: github.com/brewbits-co/releasedesk/internal/controllers/app.DashboardData*/ -}}
     {{ if .SetupGuideCompleted}}
+        <section class="mb-8 border-b border-gray-200 pb-6">
+            <h3 class="text-lg font-semibold text-gray-900">Publisher details</h3>
+            <p class="mt-1 text-sm text-gray-600">Shown on this app's public download page.</p>
+            <form class="mt-4 flex max-w-xl flex-col gap-3 sm:flex-row" method="POST" action="/internal/apps/{{.AppSlug}}/publisher">
+                <label class="sr-only" for="Publisher">Publisher</label>
+                <input id="Publisher" name="Publisher" value="{{.Publisher}}" maxlength="200" autocomplete="organization" placeholder="Publisher or organization name" class="min-w-0 flex-1 rounded-md border-gray-300 text-sm shadow-sm focus:border-violet-600 focus:ring-violet-600">
+                <button type="submit" class="rounded-md bg-violet-800 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700">Save publisher</button>
+            </form>
+        </section>
         <div class="grid justify-items-end">
             <app-platform-drawer slug="{{.CurrentAppData.AppSlug}}" name="{{.CurrentAppData.AppName}}"></app-platform-drawer>
         </div>
