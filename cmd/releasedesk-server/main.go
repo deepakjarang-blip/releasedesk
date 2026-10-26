@@ -61,7 +61,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 		if err := portalServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("Error starting Portal at port 8080: %v\n", err)
+			fmt.Printf("Error starting Portal at port 9090: %v\n", err)
 		}
 	}()
 

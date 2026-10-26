@@ -41,7 +41,7 @@ func (s *service) GetUserAccessibleApps(userID int) ([]app.App, error) {
 	}
 
 	for i := range applications {
-		if s.appRepo.GetPlatformAvailability(&applications[i]) != nil {
+		if err := s.appRepo.GetPlatformAvailability(&applications[i]); err != nil {
 			return nil, err
 		}
 	}

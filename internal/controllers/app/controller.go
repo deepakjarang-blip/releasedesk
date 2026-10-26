@@ -11,6 +11,7 @@ type AppController interface {
 	HandleAppSetupGuide(w http.ResponseWriter, r *http.Request)
 	HandleUpdatePublisher(w http.ResponseWriter, r *http.Request)
 	RenderDashboard(w http.ResponseWriter, r *http.Request)
+	RenderFeaturePage(w http.ResponseWriter, r *http.Request)
 }
 
 // NewAppController creates a new instance of appController with the provided dependencies.

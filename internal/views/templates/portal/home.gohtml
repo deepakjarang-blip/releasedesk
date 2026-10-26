@@ -9,7 +9,9 @@
 <body class="min-h-screen bg-gray-50 text-gray-900">
   <header class="border-b border-gray-200 bg-white">
     <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-      <a href="/" class="text-lg font-semibold tracking-tight">ReleaseDesk</a>
+      <a href="{{.PortalBase}}/" class="flex items-center" aria-label="ReleaseDesk home">
+        <img class="h-8" src="/assets/logo.png" alt="ReleaseDesk">
+      </a>
       <span class="text-sm text-gray-500">Download Portal</span>
     </div>
   </header>
@@ -22,7 +24,7 @@
       <ul class="divide-y divide-gray-200 border-y border-gray-200">
         {{range .Apps}}
           <li>
-            <a href="/{{.Slug}}" class="block py-6 hover:bg-white">
+            <a href="{{$.PortalBase}}/{{.Slug}}" class="block py-6 hover:bg-white">
               <h2 class="text-lg font-semibold">{{.Name}}</h2>
               {{if .Description.Valid}}<p class="mt-1 max-w-2xl text-sm text-gray-600">{{.Description.String}}</p>{{end}}
               <span class="mt-3 inline-block text-sm font-medium text-violet-800">View releases &rarr;</span>

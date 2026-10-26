@@ -19,7 +19,10 @@ func (c *controller) RenderHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sort.Slice(apps, func(i, j int) bool { return apps[i].Name < apps[j].Name })
-	c.render(w, "templates/portal/home.gohtml", homeData{Apps: apps})
+	c.render(w, "templates/portal/home.gohtml", homeData{
+		Apps:       apps,
+		PortalBase: portalBasePath(r),
+	}, portalBasePath(r))
 }
 
 func (c *controller) RenderApp(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +49,11 @@ func (c *controller) RenderApp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := appData{App: application, Releases: make([]portalRelease, 0)}
+	data := appData{
+		App:        application,
+		Releases:   make([]portalRelease, 0),
+		PortalBase: portalBasePath(r),
+	}
 	for _, channel := range channels {
 		if channel.Closed {
 			continue
@@ -60,7 +67,7 @@ func (c *controller) RenderApp(w http.ResponseWriter, r *http.Request) {
 			if releaseInfo.Status != release.Published {
 				continue
 			}
-			releaseDetails, err := c.releases.GetReleaseSummary(application.ID, releaseInfo.Version)
+			releaseDetails, err := c.releases.GetReleaseByID(releaseInfo.ID)
 			if err != nil {
 				http.Error(w, "Unable to load release details", http.StatusInternalServerError)
 				return
@@ -110,13 +117,20 @@ func (c *controller) RenderApp(w http.ResponseWriter, r *http.Request) {
 	sort.Slice(data.Releases, func(i, j int) bool {
 		return data.Releases[i].CreatedAt.After(data.Releases[j].CreatedAt)
 	})
-	c.render(w, "templates/portal/app.gohtml", data)
+	c.render(w, "templates/portal/app.gohtml", data, data.PortalBase)
 }
 
-func (c *controller) render(w http.ResponseWriter, templatePath string, data any) {
+func portalBasePath(r *http.Request) string {
+	if r.URL.Path == "/portal" || strings.HasPrefix(r.URL.Path, "/portal/") {
+		return "/portal"
+	}
+	return ""
+}
+
+func (c *controller) render(w http.ResponseWriter, templatePath string, data any, portalBase string) {
 	tmpl, err := template.New(templatePath).Funcs(template.FuncMap{
 		"artifactURL": func(checksum, filename string) string {
-			return "/artifacts/" + checksum + "?filename=" + template.URLQueryEscaper(filename)
+			return portalBase + "/artifacts/" + checksum + "?filename=" + template.URLQueryEscaper(filename)
 		},
 	}).ParseFS(views.ViewsFS, templatePath)
 	if err != nil {

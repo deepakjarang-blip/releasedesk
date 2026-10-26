@@ -6,6 +6,7 @@ import (
 	"github.com/brewbits-co/releasedesk/internal/controllers/build"
 	"github.com/brewbits-co/releasedesk/internal/controllers/misc"
 	"github.com/brewbits-co/releasedesk/internal/controllers/platform"
+	portalCtrl "github.com/brewbits-co/releasedesk/internal/controllers/portal"
 	"github.com/brewbits-co/releasedesk/internal/controllers/release"
 	authSrv "github.com/brewbits-co/releasedesk/internal/services/auth"
 	"github.com/brewbits-co/releasedesk/pkg/middlewares"
@@ -16,7 +17,6 @@ import (
 	"go.uber.org/dig"
 	"log"
 	"net/http"
-	"strings"
 )
 
 // buildConsole sets up the Chi router with necessary middleware, resolves dependencies, configures routes, and serves static files.
@@ -29,7 +29,9 @@ func buildConsole(container *dig.Container) *http.Server {
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/homepage", http.StatusTemporaryRedirect)
 	})
-	router.Get("/portal", redirectToPortal)
+	router.Get("/portal", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/portal/", http.StatusTemporaryRedirect)
+	})
 
 	// Resolve dependencies and set up endpoints and views
 	err := container.Invoke(func(
@@ -40,7 +42,12 @@ func buildConsole(container *dig.Container) *http.Server {
 		platformCtrl platform.PlatformController,
 		releaseCtrl release.ReleaseController,
 		buildCtrl build.BuildController,
+		portalController portalCtrl.PortalController,
 	) {
+		router.Get("/portal/", portalController.RenderHome)
+		router.Get("/portal/artifacts/{checksum}", portalController.HandleArtifactDownload)
+		router.Get("/portal/{slug}", portalController.RenderApp)
+
 		// Public Routes
 		router.Group(func(r chi.Router) {
 			// Public Views
@@ -58,11 +65,15 @@ func buildConsole(container *dig.Container) *http.Server {
 			r.Get("/homepage", miscCtrl.RenderHomepage)
 			r.Get("/dashboard/{slug}", appCtrl.RenderDashboard)
 			r.Get("/dashboard/{slug}/releases", releaseCtrl.RenderReleaseList)
+			r.Get("/dashboard/{slug}/releases/id/{id}/release-notes", releaseCtrl.RenderReleaseNotesByID)
+			r.Get("/dashboard/{slug}/releases/id/{id}", releaseCtrl.RenderReleaseSummaryByID)
 			r.Get("/dashboard/{slug}/releases/{version}", releaseCtrl.RenderReleaseSummary)
 			r.Get("/dashboard/{slug}/releases/{version}/release-notes", releaseCtrl.RenderReleaseNotes)
 			r.Get("/dashboard/{slug}/platforms/{platform}/builds", buildCtrl.RenderBuildList)
 			r.Get("/dashboard/{slug}/platforms/{platform}/builds/{number}", buildCtrl.RenderBuildDetails)
 			r.Get("/dashboard/{slug}/platforms/{platform}/builds/{number}/metadata", buildCtrl.RenderBuildMetadata)
+			r.Get("/dashboard/{slug}/platforms/{platform}/configs", appCtrl.RenderFeaturePage)
+			r.Get("/dashboard/{slug}/{section}", appCtrl.RenderFeaturePage)
 			// Private Internal API
 			r.Post("/internal/logout", authCtrl.HandleLogout)
 			r.Post("/internal/apps", appCtrl.HandleCreateApp)
@@ -98,18 +109,4 @@ func buildConsole(container *dig.Container) *http.Server {
 		Handler: router,
 	}
 	return server
-}
-
-func redirectToPortal(w http.ResponseWriter, r *http.Request) {
-	host := r.Host
-	portalURL := "http://localhost:9090/"
-	switch {
-	case strings.HasSuffix(host, "-8080.app.github.dev"):
-		portalHost := strings.TrimSuffix(host, "-8080.app.github.dev") + "-9090.app.github.dev"
-		portalURL = "https://" + portalHost + "/"
-	case strings.HasSuffix(host, ":8080"):
-		portalHost := strings.TrimSuffix(host, ":8080") + ":9090"
-		portalURL = "http://" + portalHost + "/"
-	}
-	http.Redirect(w, r, portalURL, http.StatusFound)
 }

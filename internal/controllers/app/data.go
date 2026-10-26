@@ -10,3 +10,10 @@ type DashboardData struct {
 	session.CurrentAppData
 	SetupGuideCompleted bool
 }
+
+type FeaturePageData struct {
+	Title       string
+	CurrentPage string
+	session.SessionData
+	session.CurrentAppData
+}

@@ -1,0 +1,18 @@
+{{ define "content" }}
+    {{- /*gotype: github.com/brewbits-co/releasedesk/internal/controllers/app.FeaturePageData*/ -}}
+    <section class="rounded-lg bg-white p-6 shadow-sm">
+        <p class="text-sm font-medium uppercase text-violet-800">{{.AppName}}</p>
+        <h2 class="mt-2 text-2xl font-semibold text-gray-900">{{.Title}}</h2>
+        <p class="mt-3 max-w-2xl text-sm text-gray-600">
+            This section is not available yet. You can continue managing this app from its overview and releases.
+        </p>
+        <div class="mt-6 flex gap-4">
+            <a class="text-sm font-semibold text-violet-800 hover:text-violet-600" href="/dashboard/{{.AppSlug}}">
+                App overview
+            </a>
+            <a class="text-sm font-semibold text-violet-800 hover:text-violet-600" href="/dashboard/{{.AppSlug}}/releases">
+                Releases
+            </a>
+        </div>
+    </section>
+{{ end }}

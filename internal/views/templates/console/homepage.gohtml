@@ -15,8 +15,8 @@
 
 {{ define "app-line" }}
     {{- /*gotype: github.com/brewbits-co/releasedesk/internal/domains/app.App*/ -}}
-    <a href="./dashboard/{{ .Slug }}">
-      <li class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6">
+      <li>
+        <a href="/dashboard/{{ .Slug }}" class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6">
         <div class="flex min-w-0 gap-x-4">
           <span class="inline-flex size-12 items-center justify-center rounded-md bg-yellow-100 border border-yellow-200">
             <span class="text-md font-medium text-yellow-600" translate="no">MY</span>
@@ -73,6 +73,6 @@
           </div>
           <i class="fa-solid fa-chevron-right"></i>
         </div>
+        </a>
       </li>
-    </a>
 {{ end }}

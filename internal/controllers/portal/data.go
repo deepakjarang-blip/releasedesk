@@ -8,12 +8,14 @@ import (
 )
 
 type homeData struct {
-	Apps []app.App
+	Apps       []app.App
+	PortalBase string
 }
 
 type appData struct {
-	App      app.App
-	Releases []portalRelease
+	App        app.App
+	Releases   []portalRelease
+	PortalBase string
 }
 
 type portalRelease struct {

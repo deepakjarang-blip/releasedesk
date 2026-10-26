@@ -1,11 +1,15 @@
 package release
 
 import (
+	"errors"
 	"github.com/brewbits-co/releasedesk/internal/domains/build"
 	"github.com/brewbits-co/releasedesk/internal/values"
 	"github.com/brewbits-co/releasedesk/pkg/fields"
 	"github.com/brewbits-co/releasedesk/pkg/validator"
 )
+
+var ErrReleaseVersionExists = errors.New("a release with this version already exists for the application")
+var ErrReleaseChannelNotFound = errors.New("the selected channel does not belong to the application")
 
 type ReleaseStatus string
 

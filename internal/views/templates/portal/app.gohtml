@@ -9,8 +9,10 @@
 <body class="min-h-screen bg-gray-50 text-gray-900">
   <header class="border-b border-gray-200 bg-white">
     <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-      <a href="/" class="text-lg font-semibold tracking-tight">ReleaseDesk</a>
-      <a href="/" class="text-sm font-medium text-violet-800">All applications</a>
+      <a href="{{.PortalBase}}/" class="flex items-center" aria-label="ReleaseDesk home">
+        <img class="h-8" src="/assets/logo.png" alt="ReleaseDesk">
+      </a>
+      <a href="{{.PortalBase}}/" class="text-sm font-medium text-violet-800">All applications</a>
     </div>
   </header>
   <main class="mx-auto max-w-5xl px-6 py-12">

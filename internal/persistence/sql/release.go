@@ -67,7 +67,7 @@ func (r *releaseRepository) GetByAppIDAndVersion(appID int, version string) (rel
 	var releaseSummary release.Release
 
 	// Execute the database query using xorm
-	has, err := r.engine.Where("app_id = ? AND version = ?", appID, version).Get(&releaseSummary)
+	has, err := r.engine.Where("app_id = ? AND version = ?", appID, version).Desc("id").Get(&releaseSummary)
 	if err != nil {
 		return release.Release{}, err
 	}

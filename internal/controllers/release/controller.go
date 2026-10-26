@@ -10,7 +10,9 @@ import (
 type ReleaseController interface {
 	RenderReleaseList(w http.ResponseWriter, r *http.Request)
 	RenderReleaseSummary(w http.ResponseWriter, r *http.Request)
+	RenderReleaseSummaryByID(w http.ResponseWriter, r *http.Request)
 	RenderReleaseNotes(w http.ResponseWriter, r *http.Request)
+	RenderReleaseNotesByID(w http.ResponseWriter, r *http.Request)
 	HandleCreateRelease(w http.ResponseWriter, r *http.Request)
 	HandleSaveReleaseNotes(w http.ResponseWriter, r *http.Request)
 	HandleUpdateBasicInfo(w http.ResponseWriter, r *http.Request)
